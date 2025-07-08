@@ -104,9 +104,6 @@
                       {{ msg.content.text }}
                       </div>
                     </template>
-                    <template v-else-if="msg.type === 'EMOJI'">
-                      <img :src="msg.content.url" alt="emoji" class="emoji-image" />
-                    </template>
                 </div>
               </div>
             </div>
@@ -117,13 +114,7 @@
         <div class="chat-input-container">
           <!-- 功能按钮区 -->
           <div class="func-logo">
-
-            <!-- 点击表情按钮，切换表情面板显示与隐藏 -->
-            <img src="/images/emoji/slightly-smiling-face.png" class="emoji" @click="clickEmoji">
-            <!-- 表情面板 -->
-            <div class="emoji-content">
-              <Emoji v-show="showEmoji" @sendEmoji="sendEmoji" @closeEmoji="clickEmoji"></Emoji>
-            </div>
+          表情
           </div>
 
           <!-- 消息发送区 -->
@@ -141,7 +132,6 @@
 import { ref, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { onMounted } from 'vue';
-import Emoji from "../components/Emoji.vue";
 import { onBeforeUnmount } from 'vue';
 
 const socket = ref(null); // WebSocket连接对象
@@ -162,7 +152,6 @@ const showfriendInfoModal = ref(false);
 const friendId=ref('');
 const friendAvatar=ref('');
 const friendName=ref('');
-const showEmoji = ref(false);
 // const fileInput = ref(null);
 // const selectedFile = ref(null);
 // const fileType = ref(0); 
@@ -462,11 +451,7 @@ const searchExistRoom = async () => {
     searchExist.value = '';
   }
 };
-// 切换表情面板显示
-const clickEmoji = () => {
-  showEmoji.value = !showEmoji.value;
-  console.log("click使showEmoji更改为", showEmoji.value);
-};
+
 // 获取用户头像的缓存逻辑
 const avatarCache = async (uid) => {
   // 如果头像已经缓存，直接返回
@@ -529,30 +514,6 @@ const loadNames = async () => {
   for (const msg of currentRoomMsg.value) {
     msg.userName = await nameCache(msg.uid);
   }
-};
-
-// 处理发送表情的事件
-const sendEmoji = (item) => {
-  console.log("发送表情:", item);
-  const message = {
-    uid: currentUserId.value,
-    roomId: currentRoomId.value,
-    type:"EMOJI",
-    content: {
-      url:item
-    },
-    userName: currentUserName.value, 
-    userAvatar: currentUserAvatar.value, 
-  };
-
-  if (socket.value && socket.value.readyState === WebSocket.OPEN) {   
-    socket.value.send(JSON.stringify(message)); 
-    console.log("向websocket发送消息成功",JSON.stringify(message));
-  } else { 
-    console.log("向websocket发送消息失败",JSON.stringify(message));
-    setTimeout(() => sendMessage(message), 1000); // 1秒后重试 
-  }
-  scrollToBottom();
 };
 
 const clickRoom = (room) => {
@@ -1099,18 +1060,6 @@ const sendMessage = async () => {
       background-color: #e0e0e0;
     }
 
-    .emoji {
-    position: relative;  /* 使得它成为定位上下文 */
-    width: 30px;
-    height: 30px;
-    margin-left: 10px;
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 100;
-}
   }
   .modal-overlay888 {
     position: fixed;
@@ -1264,9 +1213,5 @@ const sendMessage = async () => {
   .friendName{
     font-weight: bold;
     font-size: 16px;
-  }
-
-  .emoji-image{
-    width: 50px;
   }
 </style>
